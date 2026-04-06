@@ -4,17 +4,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 try {
-  // Instead of reading a file, we build the credentials from your .env variables
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // The replace function is CRUCIAL so Render reads the newlines in the key correctly
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-  };
-
-  // Initialize Firebase
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // The optional chaining (?.) prevents a total crash if the key is missing
+      // The replace() fixes the Render line-break issue
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
   });
 
   console.log("Firebase Admin SDK Initialized Successfully");
