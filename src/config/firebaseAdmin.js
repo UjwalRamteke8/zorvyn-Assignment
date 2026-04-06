@@ -1,25 +1,29 @@
 import admin from "firebase-admin";
-import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 try {
-  // In ES Modules, the cleanest way to read a relative file is using import.meta.url
-  const serviceAccountPath = new URL("../../../firebase-service-account.json", import.meta.url);
-  
-  // Read and parse the JSON file
-  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
+  // Instead of reading a file, we build the credentials from your .env variables
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // The replace function is CRUCIAL so Render reads the newlines in the key correctly
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+  };
 
   // Initialize Firebase
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
   });
 
   console.log("Firebase Admin SDK Initialized Successfully");
-
 } catch (error) {
-  console.error("🔥 Firebase Setup Error: Could not find or read the service account JSON file.");
+  console.error(
+    "🔥 Firebase Setup Error: Could not load credentials from environment variables.",
+  );
   console.error(error.message);
-  process.exit(1); // Stop the server from starting if Firebase fails
+  process.exit(1);
 }
 
-// Export it at the bottom, AFTER it has been initialized
 export default admin;
